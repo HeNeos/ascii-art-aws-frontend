@@ -100,7 +100,7 @@ export default function Home() {
             {isProcessing && (
               <div className="flex items-center text-primary">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                <span className="text-sm">Processing through AI pipeline...</span>
+                <span className="text-sm">Processing...</span>
               </div>
             )}
             {!isUploading && !isProcessing && resultUrl && activeTab === "upload" && (
