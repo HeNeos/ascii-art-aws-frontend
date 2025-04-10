@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { fileName, fileType } = body
+    const { fileName, fileType, dithering, resolution, output } = body
 
     if (!fileName || !fileType) {
       return NextResponse.json({ error: "fileName and fileType are required" }, { status: 400 })
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       throw new Error("API_GATEWAY_URL environment variable is not set")
     }
 
-    const url = `${apiGatewayUrl}/generate-upload-url?uploadToken=${uuid}`
+    const url = `${apiGatewayUrl}/generate-upload-url?uploadToken=${uuid}&dithering=${dithering}&resolution=${resolution}&output=${output}`
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -34,6 +34,9 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         fileName,
         contentType: fileType,
+        dithering,
+        resolution,
+        output,
       }),
     })
 

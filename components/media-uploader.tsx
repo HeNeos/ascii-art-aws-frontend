@@ -7,6 +7,12 @@ import { FileUp, X, ImageIcon, Video, ArrowUpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const imageResolutions = ['240p', '480p', '720p', '1080p', '1440p', '2160p', '2880p'];
+const videoResolutions = ['240p', '480p'];
+const ditheringOptions = ['atkinson', 'floyd-steinberg', 'jarvis-judice-ninke', 'riemersma', 'riemersma-naive']
+const imageOutputOptions = ['color', 'gray-scale', 'black-and-white']
 
 interface MediaUploaderProps {
   onUploadStart: () => void
@@ -21,14 +27,25 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
   const inputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [selectedDithering, setSelectedDithering] = useState('atkinson');
+  const [selectedResolution, setSelectedResolution] = useState('240');
+  const [selectedOutput, setSelectedOutput] = useState('color');
 
   useEffect(() => {
-    // Create preview URL when a file is selected
+    if (selectedFile) {
+      if (selectedFile.type.startsWith('image/')) {
+        setSelectedResolution('720p');
+      } else {
+        setSelectedResolution('480p');
+      }
+    }
+  }, [selectedFile]);
+
+  useEffect(() => {
     if (selectedFile) {
       const objectUrl = URL.createObjectURL(selectedFile)
       setPreviewUrl(objectUrl)
 
-      // Free memory when this component is unmounted
       return () => {
         URL.revokeObjectURL(objectUrl)
       }
@@ -103,6 +120,9 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
         body: JSON.stringify({
           fileName: selectedFile.name,
           fileType: selectedFile.type,
+          dithering: selectedDithering.replace(/-/g, "_"),
+          resolution: selectedResolution.replace(/p/g, ""),
+          output: selectedOutput.replace(/-/g, "_").toUpperCase()
         }),
       })
 
@@ -125,6 +145,9 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
         formData.append(key, value as string)
       })
       formData.append("file", selectedFile)
+      formData.append("x-amz-meta-dithering", selectedDithering);
+      formData.append("x-amz-meta-resolution", selectedResolution);
+      formData.append("x-amz-meta-output", selectedOutput);
 
       const uploadResponse = await fetch(presignedPost.uploadUrl, {
         method: "POST",
@@ -321,14 +344,77 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
 
       {selectedFile && (
         <div className="mt-6 flex justify-center">
-          <Button
-            onClick={handleUpload}
-            disabled={!selectedFile}
-            className="rounded-full px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 transition-all"
-          >
-            <FileUp className="mr-2 h-5 w-5" />
-            Process Media
-          </Button>
+          <div className="w-full space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground/80">Dithering Strategy</label>
+                <Select 
+                  value={selectedDithering} 
+                  onValueChange={setSelectedDithering}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select dithering" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ditheringOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground/80">Output Resolution</label>
+                <Select
+                  value={selectedResolution}
+                  onValueChange={setSelectedResolution}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select resolution" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(selectedFile.type.startsWith('image/') 
+                      ? imageResolutions 
+                      : videoResolutions
+                    ).map((res) => (
+                      <SelectItem key={res} value={res}>
+                        {res}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+            {selectedFile.type.startsWith("image") && <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground/80">Output</label>
+                <Select 
+                  value={selectedOutput} 
+                  onValueChange={setSelectedOutput}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select output" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {imageOutputOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>}
+            </div>
+
+            <Button
+              onClick={handleUpload}
+              className="rounded-full px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 transition-all w-full"
+            >
+              <FileUp className="mr-2 h-5 w-5" />
+              Process Media
+            </Button>
+          </div>
         </div>
       )}
     </div>
