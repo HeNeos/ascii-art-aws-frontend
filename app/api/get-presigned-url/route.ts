@@ -4,14 +4,14 @@ import { v4 as uuidv4 } from "uuid"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { fileName, fileType, dithering, resolution, output } = body
+    const { fileName, contentType, dithering, resolution, output } = body
 
-    if (!fileName || !fileType) {
-      return NextResponse.json({ error: "fileName and fileType are required" }, { status: 400 })
+    if (!fileName || !contentType) {
+      return NextResponse.json({ error: "fileName and contentType are required" }, { status: 400 })
     }
 
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "video/mp4"]
-    if (!validTypes.includes(fileType)) {
+    if (!validTypes.includes(contentType)) {
       return NextResponse.json(
         { error: "Invalid file type. Only PNG, JPG, JPEG, and MP4 are supported." },
         { status: 400 },
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         fileName,
-        contentType: fileType,
+        contentType: contentType,
         dithering,
         resolution,
         output,

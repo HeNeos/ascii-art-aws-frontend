@@ -1,14 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-// TODO: Fix function method
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { uploadToken, fileName, fileType } = body
+    const { searchParams } = new URL(request.url);
+    const uploadToken = searchParams.get('uploadToken');
+    const fileName = searchParams.get('fileName');
+    const contentType = searchParams.get('contentType');
     
     // Validate input
-    if (!fileName || !fileType) {
-      return NextResponse.json({ error: "fileName and fileType are required" }, { status: 400 })
+    if (!fileName || !contentType) {
+      return NextResponse.json({ error: "fileName and contentType are required" }, { status: 400 })
     }
 
     if (!uploadToken) {
@@ -23,14 +24,10 @@ export async function POST(request: NextRequest) {
     const url = `${apiGatewayUrl}/poll-ascii-art?uploadToken=${encodeURIComponent(uploadToken)}`
 
     const response = await fetch(url, {
-      method: "POST",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        fileName,
-        contentType: fileType,
-      }),
     })
 
     if (!response.ok) {

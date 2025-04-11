@@ -172,7 +172,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
         },
         body: JSON.stringify({
           fileName: selectedFile.name,
-          fileType: selectedFile.type,
+          contentType: selectedFile.type,
           dithering: selectedDithering.replace(/-/g, "_"),
           resolution: selectedResolution.replace(/p/g, ""),
           output: selectedOutput.replace(/-/g, "_").toUpperCase()
@@ -228,7 +228,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
     }
   }
 
-  const pollForResult = async (uploadToken: string, fileName: string, fileType: string): Promise<string> => {
+  const pollForResult = async (uploadToken: string, fileName: string, contentType: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       let attempts = 0
       const maxAttempts = 60 // 2 minutes of polling at 2-second intervals
@@ -239,18 +239,19 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
             reject(new Error("Processing timed out after 2 minutes"))
             return
           }
-
           attempts++
-          const response = await fetch(`/api/poll-ascii-art`, {
-            method: "POST",
+
+          const queryParams = new URLSearchParams({
+            uploadToken,
+            fileName,
+            contentType
+          }).toString()
+
+          const response = await fetch(`/api/poll-ascii-art?${queryParams}`, {
+            method: "GET",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              uploadToken: uploadToken,
-              fileName: fileName,
-              fileType: fileType,
-            }),
           })
 
           if (!response.ok) {
