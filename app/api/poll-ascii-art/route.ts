@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
     }
 
     const url = `${apiGatewayUrl}/poll-ascii-art?uploadToken=${encodeURIComponent(uploadToken)}`
-    console.log(`Checking processing status: ${url}`)
 
     const response = await fetch(url, {
       method: "POST",

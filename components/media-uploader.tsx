@@ -20,6 +20,29 @@ interface MediaUploaderProps {
   onUploadComplete: (url: string, type: "image" | "video") => void
 }
 
+const getVideoMetadata = (file: File): Promise<{ duration: number, width: number, height: number }> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    const url = URL.createObjectURL(file)
+    
+    video.addEventListener('loadedmetadata', () => {
+      resolve({
+        duration: video.duration,
+        width: video.videoWidth,
+        height: video.videoHeight
+      })
+      URL.revokeObjectURL(url)
+    })
+
+    video.addEventListener('error', (e) => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Failed to load video metadata'))
+    })
+
+    video.src = url
+  })
+}
+
 export default function MediaUploader({ onUploadStart, onProcessingStart, onUploadComplete }: MediaUploaderProps) {
   const [dragActive, setDragActive] = useState<boolean>(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -30,6 +53,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
   const [selectedDithering, setSelectedDithering] = useState('atkinson');
   const [selectedResolution, setSelectedResolution] = useState('240');
   const [selectedOutput, setSelectedOutput] = useState('color');
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
 
   useEffect(() => {
     if (selectedFile) {
@@ -64,43 +88,72 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
     }
   }
 
-  const validateFile = (file: File): boolean => {
+  const validateFile = async (file: File): Promise<boolean> => {
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "video/mp4"]
     if (!validTypes.includes(file.type)) {
-      setError("Invalid file type. Please upload a PNG, JPG, JPEG, or MP4 file.")
-      return false
+      throw new Error("Invalid file type. Please upload a PNG, JPG, JPEG, or MP4 file.")
     }
 
-    // 16MB max size
-    if (file.size > 16 * 1024 * 1024) {
-      setError("File is too large. Maximum size is 16MB.")
-      return false
+    if (file.size > 20 * 1024 * 1024) {
+      throw new Error("File is too large. Maximum size is 20MB.")
+    }
+
+    if (file.type.startsWith('video/')) {
+      try {
+        const metadata = await getVideoMetadata(file)
+        
+        // Check duration (30s)
+        if (metadata.duration > 30) {
+          throw new Error("Video exceeds maximum allowed duration of 30s")
+        }
+
+        // Check resolution (1080p = 1920x1080)
+        if (metadata.height > 1080 || metadata.width > 1920) {
+          throw new Error("Video resolution exceeds maximum allowed 1080p")
+        }
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : "Invalid video file")
+      }
     }
 
     return true
   }
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0]
-      if (validateFile(file)) {
+      try {
+        setIsAnalyzing(true)
+        await validateFile(file)
         setSelectedFile(file)
         setError(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Invalid file")
+        setSelectedFile(null)
+      } finally {
+        setIsAnalyzing(false)
       }
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
-      if (validateFile(file)) {
+      try {
+        setIsAnalyzing(true)
+        await validateFile(file)
         setSelectedFile(file)
         setError(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Invalid file")
+        setSelectedFile(null)
+      } finally {
+        setIsAnalyzing(false)
       }
     }
   }
@@ -263,7 +316,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
           dragActive
             ? "border-primary bg-primary/5 scale-[1.01] shadow-lg shadow-primary/10"
             : "border-border/50 hover:border-primary/40 dark:hover:border-primary/30 hover:bg-muted/30"
-        }`}
+        } ${isAnalyzing ? "opacity-50 cursor-wait" : ""}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -276,7 +329,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
               <ArrowUpCircle className="h-8 w-8 text-primary" />
             </div>
             <p className="text-lg font-medium mb-2">Drop your media here</p>
-            <p className="text-sm text-muted-foreground mb-4">PNG, JPG, JPEG, MP4 (Max 16MB)</p>
+            <p className="text-sm text-muted-foreground mb-4">PNG, JPG, JPEG, MP4 (Max 20MB)</p>
             <Button
               variant="outline"
               className="rounded-full px-6 border-primary/30 hover:bg-primary/10 hover:text-primary"

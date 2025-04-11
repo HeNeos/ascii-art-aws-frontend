@@ -47,7 +47,6 @@ export async function POST(request: NextRequest) {
     }
 
     const presignedPost = await response.json()
-    console.log("Received presigned post data:", JSON.stringify(presignedPost))
 
     return NextResponse.json({
       presignedPost,
