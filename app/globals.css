@@ -10,7 +10,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 120 100% 35%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -22,30 +22,30 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --ring: 120 100% 35%;
+    --radius: 0;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 0 0% 10%;
+    --foreground: 120 100% 85%;
+    --card: 0 0% 15%;
+    --card-foreground: 120 100% 85%;
+    --popover: 0 0% 15%;
+    --popover-foreground: 120 100% 85%;
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 120 30% 20%;
+    --secondary-foreground: 120 100% 85%;
+    --muted: 120 30% 20%;
+    --muted-foreground: 120 60% 70%;
+    --accent: 120 30% 20%;
+    --accent-foreground: 120 100% 85%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 120 50% 30%;
+    --input: 120 50% 30%;
+    --ring: 120 100% 50%;
   }
 }
 
@@ -62,6 +62,223 @@
   transition: none !important;
 }
 
+/* ASCII Background */
+.ascii-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ascii-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: hsla(var(--primary), 0.15);
+}
+
+.dark .ascii-pattern {
+  color: hsla(var(--primary), 0.2);
+}
+
+.ascii-art-block {
+  font-family: monospace;
+  white-space: pre;
+  line-height: 1;
+  font-size: 8px;
+  margin: 0;
+  padding: 0;
+  opacity: 0.34;
+  color: hsla(var(--primary), 0.15);
+}
+
+@media (min-width: 640px) {
+  .ascii-art-block {
+    font-size: 8px;
+  }
+}
+
+@media (min-width: 768px) {
+  .ascii-art-block {
+    font-size: 9px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ascii-art-block {
+    font-size: 10px;
+  }
+}
+
+/* Terminal cursor blink animation */
+@keyframes cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1em;
+  background-color: hsl(var(--foreground));
+  animation: cursor-blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+
+/* Terminal scanlines effect */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 0%, rgba(32, 128, 32, 0.02) 50%, transparent 100%);
+  background-size: 100% 2px;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+/* Terminal glow effect */
+.terminal-glow {
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.2), 0 0 20px rgba(0, 255, 0, 0.1);
+}
+
+/* ASCII art borders */
+.ascii-border {
+  position: relative;
+  border: none !important;
+}
+
+.ascii-border::before {
+  content: "+";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+}
+
+.ascii-border::after {
+  content: "+";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+}
+
+.ascii-border-bottom::before {
+  content: "+";
+  position: absolute;
+  bottom: -1px;
+  left: -1px;
+}
+
+.ascii-border-bottom::after {
+  content: "+";
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+}
+
+.ascii-top-border {
+  position: relative;
+}
+
+.ascii-top-border::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0px,
+    transparent 3px,
+    hsl(var(--border)) 3px,
+    hsl(var(--border)) 6px
+  );
+}
+
+.ascii-bottom-border {
+  position: relative;
+}
+
+.ascii-bottom-border::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0px,
+    transparent 3px,
+    hsl(var(--border)) 3px,
+    hsl(var(--border)) 6px
+  );
+}
+
+.ascii-left-border {
+  position: relative;
+}
+
+.ascii-left-border::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    hsl(var(--border)) 3px,
+    hsl(var(--border)) 6px
+  );
+}
+
+.ascii-right-border {
+  position: relative;
+}
+
+.ascii-right-border::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    hsl(var(--border)) 3px,
+    hsl(var(--border)) 6px
+  );
+}
+
+/* Terminal text effect */
+.terminal-text {
+  color: hsl(var(--foreground));
+  text-shadow: 0 0 5px hsla(var(--foreground) / 0.5);
+}
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -71,21 +288,22 @@
 
 ::-webkit-scrollbar-track {
   background: hsl(var(--background));
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 4px;
+  background: hsl(var(--primary) / 0.5);
+  border-radius: 0;
+  border: 1px dashed hsl(var(--border));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--primary) / 0.7);
 }
 
 /* Video controls styling */
 video::-webkit-media-controls-panel {
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.5)) !important;
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.7)) !important;
 }
 
 /* Smooth transitions */

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import MediaUploader from "@/components/media-uploader"
 import MediaPreview from "@/components/media-preview"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { AsciiBackground } from "@/components/ascii-background"
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("upload")
@@ -24,22 +25,22 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-12 bg-gradient-to-br from-background to-background/80 transition-colors duration-300">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-12 bg-gradient-to-br from-background to-background/80 transition-colors duration-300 relative z-10">
+      <AsciiBackground />
+
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
-          Ascii Art
-        </h1>
+        <h1 className="text-2xl font-bold font-mono terminal-text">Ascii Art</h1>
         <ThemeToggle />
       </div>
 
-      <Card className="w-full max-w-4xl shadow-xl border-border/50 backdrop-blur-sm bg-background/80 overflow-hidden">
-        <CardHeader className="space-y-1 pb-4 border-b border-border/30">
+      <Card className="w-full max-w-4xl shadow-xl border-border/50 backdrop-blur-sm bg-background/80 overflow-hidden relative ascii-border ascii-border-bottom">
+        <CardHeader className="space-y-1 pb-4 border-b border-border/30 ascii-bottom-border">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-2xl font-medium">
+              <CardTitle className="text-2xl font-medium font-mono">
                 {activeTab === "upload" ? "Upload Media" : "Processing Result"}
               </CardTitle>
-              <CardDescription className="text-muted-foreground mt-1">
+              <CardDescription className="text-muted-foreground mt-1 font-mono">
                 {activeTab === "upload"
                   ? "Upload images or videos to process"
                   : "View and download your processed media"}
@@ -49,7 +50,7 @@ export default function Home() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs gap-1 hover:bg-primary/10"
+                className="text-xs gap-1 hover:bg-primary/10 font-mono"
                 onClick={() => setActiveTab(activeTab === "upload" ? "result" : "upload")}
               >
                 {activeTab === "upload" ? (
@@ -90,23 +91,23 @@ export default function Home() {
         </CardContent>
 
         {(isUploading || isProcessing || (resultUrl && activeTab === "upload")) && (
-          <div className="px-6 py-4 border-t border-border/30 bg-muted/30">
+          <div className="px-6 py-4 border-t border-border/30 bg-muted/30 ascii-top-border">
             {isUploading && (
-              <div className="flex items-center text-amber-600 dark:text-amber-400">
+              <div className="flex items-center text-amber-600 dark:text-amber-400 font-mono">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                <span className="text-sm">Uploading your media...</span>
+                <span className="text-sm">$ uploading_media...</span>
               </div>
             )}
             {isProcessing && (
-              <div className="flex items-center text-primary">
+              <div className="flex items-center text-primary font-mono">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                <span className="text-sm">Processing...</span>
+                <span className="text-sm">$ processing_media...</span>
               </div>
             )}
             {!isUploading && !isProcessing && resultUrl && activeTab === "upload" && (
-              <div className="flex items-center text-green-600 dark:text-green-400">
+              <div className="flex items-center text-green-600 dark:text-green-400 font-mono">
                 <Check className="mr-2 h-4 w-4" />
-                <span className="text-sm">Processing complete. View your result.</span>
+                <span className="text-sm">$ process_complete</span>
               </div>
             )}
           </div>
