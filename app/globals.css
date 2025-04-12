@@ -62,10 +62,6 @@
   transition: none !important;
 }
 
-/* Futuristic UI Styles */
-.no-transitions * {
-  transition: none !important;
-}
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -97,5 +93,10 @@ video::-webkit-media-controls-panel {
   transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter,
     backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  transition-duration: 250ms;
+}
+
+[data-radix-popper-content-wrapper] {
+  transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin) !important;
 }
