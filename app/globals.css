@@ -84,21 +84,25 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  transition: opacity 0.5s ease;
+}
+
+.dark-pattern {
   color: hsla(var(--primary), 0.15);
 }
 
-.dark .ascii-pattern {
-  color: hsla(var(--primary), 0.2);
+.light-pattern {
+  color: hsl(0, 0%, 0%);
 }
 
 .ascii-art-block {
   font-family: monospace;
   white-space: pre;
   line-height: 1;
-  font-size: 8px;
+  font-size: 7px;
   margin: 0;
   padding: 0;
-  opacity: 0.34;
+  opacity: 0.4;
   color: hsla(var(--primary), 0.15);
 }
 
@@ -110,13 +114,13 @@
 
 @media (min-width: 768px) {
   .ascii-art-block {
-    font-size: 9px;
+    font-size: 8px;
   }
 }
 
 @media (min-width: 1024px) {
   .ascii-art-block {
-    font-size: 10px;
+    font-size: 9px;
   }
 }
 
@@ -133,12 +137,13 @@
 
 .terminal-cursor {
   display: inline-block;
-  width: 0.6em;
-  height: 1em;
+  width: 0.3em;
+  height: 0.9em;
   background-color: hsl(var(--foreground));
   animation: cursor-blink 1s step-end infinite;
   vertical-align: text-bottom;
-  margin-left: 2px;
+  margin-left: 1px;
+  margin-bottom: 6px;
 }
 
 /* Terminal scanlines effect */

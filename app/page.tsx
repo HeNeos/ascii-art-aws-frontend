@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Loader2, ArrowRight } from "lucide-react"
+import { Check, Loader2, ArrowRight, Terminal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -29,11 +29,18 @@ export default function Home() {
       <AsciiBackground />
 
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold font-mono terminal-text">Ascii Art</h1>
+        <div className="flex items-center">
+          <Terminal className="h-5 w-5 mr-2 text-primary hidden sm:block" />
+          <h1 className="text-2xl font-bold font-mono terminal-text">
+            <span className="hidden sm:inline">Ascii Art</span>
+            <span className="sm:hidden">ASCII</span>
+            <span className="terminal-cursor"></span>
+          </h1>
+        </div>
         <ThemeToggle />
       </div>
 
-      <Card className="w-full max-w-4xl shadow-xl border-border/50 backdrop-blur-sm bg-background/80 overflow-hidden relative ascii-border ascii-border-bottom">
+      <Card className="w-full max-w-4xl shadow-xl border-border/50 backdrop-blur-sm bg-background/40 overflow-hidden relative ascii-border ascii-border-bottom">
         <CardHeader className="space-y-1 pb-4 border-b border-border/30 ascii-bottom-border">
           <div className="flex items-center justify-between">
             <div>
