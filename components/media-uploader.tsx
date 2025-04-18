@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const imageResolutions = ['240p', '480p', '720p', '1080p', '1440p', '2160p', '2880p'];
-const videoResolutions = ['240p', '480p'];
+const videoResolutions = ['240p', '480p', '720p'];
 const ditheringOptions = ['atkinson', 'floyd-steinberg', 'jarvis-judice-ninke', 'riemersma', 'riemersma-naive']
 const imageOutputOptions = ['color', 'gray-scale', 'black-and-white']
 
@@ -94,8 +94,8 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
       throw new Error("Invalid file type. Please upload a PNG, JPG, JPEG, or MP4 file.")
     }
 
-    if (file.size > 20 * 1024 * 1024) {
-      throw new Error("File is too large. Maximum size is 20MB.")
+    if (file.size > 32 * 1024 * 1024) {
+      throw new Error("File is too large. Maximum size is 32MB.")
     }
 
     if (file.type.startsWith('video/')) {
@@ -231,12 +231,14 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
   const pollForResult = async (uploadToken: string, fileName: string, contentType: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       let attempts = 0
-      const maxAttempts = 60 // 2 minutes of polling at 2-second intervals
+      let retry_interval = contentType.startsWith("video/") ? 5000 : 2500;
+      const maxAttempts = 60;
+      
 
       const checkResult = async () => {
         try {
           if (attempts >= maxAttempts) {
-            reject(new Error("Processing timed out after 2 minutes"))
+            reject(new Error("Processing timed out after 2.5 minutes"))
             return
           }
           attempts++
@@ -258,7 +260,8 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
             const errorText = await response.text()
             console.warn(`Error checking processing status (attempt ${attempts}): ${errorText}`)
             // Continue polling even on error
-            setTimeout(checkResult, 2000)
+            setTimeout(checkResult, retry_interval)
+            retry_interval = 2500;
             return
           }
 
@@ -266,11 +269,11 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
           if (data.url) {
             resolve(data.url)
           } else {
-            setTimeout(checkResult, 2000)
+            setTimeout(checkResult, retry_interval)
           }
         } catch (error) {
           console.warn(`Exception during polling (attempt ${attempts}):`, error)
-          setTimeout(checkResult, 2000)
+          setTimeout(checkResult, retry_interval)
         }
       }
 
