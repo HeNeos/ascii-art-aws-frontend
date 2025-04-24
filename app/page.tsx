@@ -33,7 +33,7 @@ export default function Home() {
           <Terminal className="h-5 w-5 mr-2 text-primary hidden sm:block" />
           <h1 className="text-2xl font-bold font-mono terminal-text">
             <span className="hidden sm:inline">Ascii Art</span>
-            <span className="sm:hidden">ASCII</span>
+            <span className="sm:hidden">Ascii Art</span>
             <span className="terminal-cursor"></span>
           </h1>
         </div>

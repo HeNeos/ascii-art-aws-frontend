@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const imageResolutions = ['240p', '480p', '720p', '1080p', '1440p', '2160p', '2880p'];
-const videoResolutions = ['240p', '480p', '720p'];
+const videoResolutions = ['240p', '480p', '720p', '1080p'];
 const ditheringOptions = ['atkinson', 'floyd-steinberg', 'jarvis-judice-ninke', 'riemersma', 'riemersma-naive']
 const imageOutputOptions = ['color', 'gray-scale', 'black-and-white']
 
@@ -102,9 +102,9 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
       try {
         const metadata = await getVideoMetadata(file)
         
-        // Check duration (30s)
-        if (metadata.duration > 30) {
-          throw new Error("Video exceeds maximum allowed duration of 30s")
+        // Check duration (2min)
+        if (metadata.duration > 120) {
+          throw new Error("Video exceeds maximum allowed duration of 120s")
         }
 
         // Check resolution (1080p = 1920x1080)
@@ -231,14 +231,14 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
   const pollForResult = async (uploadToken: string, fileName: string, contentType: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       let attempts = 0
-      let retry_interval = contentType.startsWith("video/") ? 5000 : 2500;
-      const maxAttempts = 60;
-      
+      const isVideo = contentType.startsWith("video/");
+      let retryInterval = isVideo ? 8000 : 2200;
+      const maxAttempts = isVideo ? 90 : 50;
 
       const checkResult = async () => {
         try {
           if (attempts >= maxAttempts) {
-            reject(new Error("Processing timed out after 2.5 minutes"))
+            reject(new Error("Processing timed out"))
             return
           }
           attempts++
@@ -260,8 +260,9 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
             const errorText = await response.text()
             console.warn(`Error checking processing status (attempt ${attempts}): ${errorText}`)
             // Continue polling even on error
-            setTimeout(checkResult, retry_interval)
-            retry_interval = 2500;
+            setTimeout(checkResult, retryInterval)
+            retryInterval -= (isVideo ? 250 : 500);
+            retryInterval = Math.max(retryInterval, isVideo ? 2500 : 1000);
             return
           }
 
@@ -269,11 +270,11 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
           if (data.url) {
             resolve(data.url)
           } else {
-            setTimeout(checkResult, retry_interval)
+            setTimeout(checkResult, retryInterval)
           }
         } catch (error) {
           console.warn(`Exception during polling (attempt ${attempts}):`, error)
-          setTimeout(checkResult, retry_interval)
+          setTimeout(checkResult, retryInterval)
         }
       }
 
@@ -333,7 +334,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
               <ArrowUpCircle className="h-8 w-8 text-primary" />
             </div>
             <p className="text-lg font-medium mb-2">Drop your media here</p>
-            <p className="text-sm text-muted-foreground mb-4">PNG, JPG, JPEG, MP4 (Max 20MB)</p>
+            <p className="text-sm text-muted-foreground mb-4">PNG, JPG, JPEG, MP4 (Max 32MB)</p>
             <Button
               variant="outline"
               className="rounded-full px-6 border-primary/30 hover:bg-primary/10 hover:text-primary"
