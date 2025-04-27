@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
 
     const uuid = uuidv4()
 
-    const apiGatewayUrl = process.env.API_GATEWAY_URL
-    if (!apiGatewayUrl) {
+    const apiGenerateUrl = process.env.API_GENERATE_URL
+    if (!apiGenerateUrl) {
       throw new Error("API_GATEWAY_URL environment variable is not set")
     }
 
-    const url = `${apiGatewayUrl}/generate-upload-url?uploadToken=${uuid}&dithering=${dithering}&resolution=${resolution}&output=${output}`
+    const url = `https://${apiGenerateUrl}/generate-upload-url?uploadToken=${uuid}&dithering=${dithering}&resolution=${resolution}&output=${output}`
     const response = await fetch(url, {
       method: "POST",
       headers: {

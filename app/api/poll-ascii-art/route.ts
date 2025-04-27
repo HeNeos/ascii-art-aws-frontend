@@ -16,12 +16,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Upload token is required" }, { status: 400 })
     }
 
-    const apiGatewayUrl = process.env.API_GATEWAY_URL
-    if (!apiGatewayUrl) {
+    const apiPollUrl = process.env.API_POLL_URL
+    if (!apiPollUrl) {
       throw new Error("API_GATEWAY_URL environment variable is not set")
     }
 
-    const url = `${apiGatewayUrl}/poll-ascii-art?uploadToken=${encodeURIComponent(uploadToken)}`
+    const url = `https://${apiPollUrl}/poll-ascii-art?uploadToken=${encodeURIComponent(uploadToken)}`
 
     const response = await fetch(url, {
       method: "GET",
