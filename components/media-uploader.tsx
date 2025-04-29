@@ -2,6 +2,7 @@
 
 import type React from "react"
 
+import { v4 as uuidv4 } from "uuid"
 import { useState, useRef, useEffect } from "react"
 import { FileUp, X, ImageIcon, Video, ArrowUpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -164,33 +165,38 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
     try {
       setError(null)
       onUploadStart()
-
-      const response = await fetch("/api/get-presigned-url", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fileName: selectedFile.name,
-          contentType: selectedFile.type,
-          dithering: selectedDithering.replace(/-/g, "_"),
-          resolution: selectedResolution.replace(/p/g, ""),
-          output: selectedOutput.replace(/-/g, "_").toUpperCase()
-        }),
+      const uuid = uuidv4()
+      const dithering = selectedDithering.replace(/-/g, "_")
+      const resolution = selectedResolution.replace(/p/g, "")
+      const output = selectedOutput.replace(/-/g, "_").toUpperCase()
+      const response = await fetch(
+        `https://${process.env.NEXT_PUBLIC_API_GENERATE_URL}/generate-upload-url?uploadToken=${uuid}&dithering=${dithering}&resolution=${resolution}&output=${output}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: selectedFile.name,
+            contentType: selectedFile.type,
+            dithering: dithering,
+            resolution: resolution,
+            output: output,
+          })
       })
-
       if (!response.ok) {
         const errorData = await response.text()
         throw new Error(`Failed to get presigned URL: ${errorData}`)
       }
 
-      const data = await response.json()
+      const json = await response.json()
 
-      if (!data.presignedPost || !data.presignedPost.uploadUrl || !data.presignedPost.fields) {
+      if (!json.uploadUrl || !json.jobId) {
         throw new Error("Invalid presigned post data received")
       }
-
-      const { presignedPost, uploadToken } = data
+      
+      const presignedPost = {
+        uploadUrl: json.uploadUrl,
+        fields:    json.fields,
+      }
+      const uploadToken = json.jobId
 
       const formData = new FormData()
       formData.append("Content-Type", selectedFile.type)
@@ -248,14 +254,10 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
             fileName,
             contentType
           }).toString()
-
-          const response = await fetch(`/api/poll-ascii-art?${queryParams}`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
+          const response = await fetch(`https://${process.env.NEXT_PUBLIC_API_POLL_URL}/poll-ascii-art?uploadToken=${encodeURIComponent(uploadToken)}`, {
+              method: "GET",
+              headers: { "Content-Type": "application/json" }
           })
-
           if (!response.ok) {
             const errorText = await response.text()
             console.warn(`Error checking processing status (attempt ${attempts}): ${errorText}`)
