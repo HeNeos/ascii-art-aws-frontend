@@ -238,8 +238,8 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
     return new Promise((resolve, reject) => {
       let attempts = 0
       const isVideo = contentType.startsWith("video/");
-      let retryInterval = isVideo ? 8000 : 2200;
-      const maxAttempts = isVideo ? 90 : 50;
+      let retryInterval = isVideo ? 7000 : 1400;
+      const maxAttempts = isVideo ? 90 : 40;
 
       const checkResult = async () => {
         try {
@@ -263,8 +263,8 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
             console.warn(`Error checking processing status (attempt ${attempts}): ${errorText}`)
             // Continue polling even on error
             setTimeout(checkResult, retryInterval)
-            retryInterval -= (isVideo ? 250 : 500);
-            retryInterval = Math.max(retryInterval, isVideo ? 2500 : 1000);
+            retryInterval -= (isVideo ? 800 : 200);
+            retryInterval = Math.max(retryInterval, isVideo ? 1500 : 800);
             return
           }
 
