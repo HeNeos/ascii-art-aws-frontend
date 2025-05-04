@@ -7,6 +7,8 @@ import { useState, useRef, useEffect } from "react"
 import { FileUp, X, ImageIcon, Video, ArrowUpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -52,9 +54,10 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [selectedDithering, setSelectedDithering] = useState('atkinson');
+  const [edgeDetection, setEdgeDetection] = useState<boolean>(false);
   const [selectedResolution, setSelectedResolution] = useState('240');
   const [selectedOutput, setSelectedOutput] = useState('color');
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     if (selectedFile) {
@@ -169,8 +172,9 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
       const dithering = selectedDithering.replace(/-/g, "_")
       const resolution = selectedResolution.replace(/p/g, "")
       const output = selectedOutput.replace(/-/g, "_").toUpperCase()
+      const edges = edgeDetection;
       const response = await fetch(
-        `https://${process.env.NEXT_PUBLIC_API_GENERATE_URL}/generate-upload-url?uploadToken=${uuid}&dithering=${dithering}&resolution=${resolution}&output=${output}`, {
+        `https://${process.env.NEXT_PUBLIC_API_GENERATE_URL}/generate-upload-url?uploadToken=${uuid}&dithering=${dithering}&resolution=${resolution}&output=${output}&edge_detection=${edges}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -179,6 +183,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
             dithering: dithering,
             resolution: resolution,
             output: output,
+            edge_detection: edges,
           })
       })
       if (!response.ok) {
@@ -207,6 +212,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
       formData.append("x-amz-meta-dithering", selectedDithering);
       formData.append("x-amz-meta-resolution", selectedResolution);
       formData.append("x-amz-meta-output", selectedOutput);
+      formData.append("x-amz-meta-edge-detection", String(edges));
 
       const uploadResponse = await fetch(presignedPost.uploadUrl, {
         method: "POST",
@@ -405,7 +411,7 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
       {selectedFile && (
         <div className="mt-6 flex justify-center">
           <div className="w-full space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground/80">Dithering Strategy</label>
                 <Select 
@@ -465,8 +471,27 @@ export default function MediaUploader({ onUploadStart, onProcessingStart, onUplo
                   </SelectContent>
                 </Select>
               </div>}
+            <div className="space-y-2">
+              <Label
+                htmlFor="edge-detection"
+                className="text-sm font-medium text-foreground/80 block mb-1"
+              >
+                Edge Detection
+              </Label>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="edge-detection"
+                  type="checkbox"
+                  checked={edgeDetection}
+                  onCheckedChange={setEdgeDetection}
+                  aria-label="Toggle edge detection"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {edgeDetection ? "Enabled" : "Disabled"}
+                </span>
+              </div>
             </div>
-
+            </div>
             <Button
               onClick={handleUpload}
               className="rounded-full px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 transition-all w-full"
